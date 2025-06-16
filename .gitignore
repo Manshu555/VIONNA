@@ -19,6 +19,7 @@ models/
 __pycache__/
 *.pyc
 #Vionna_model
+vionna_model/
 
 
 # Ignore virtual environments (if you use one)
