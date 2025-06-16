@@ -11,12 +11,14 @@ data/attendance_summary.txt
 data/attendance_report.csv
 
 # Ignore large model files (if not using Git LFS)
-# models/yolov8n.pt
-# models/deepfake-detection-model.h5
+models/yolov8n.pt
+models/deepfake-detection-model.h5
 
 # Ignore Python cache files
 __pycache__/
 *.pyc
+#Vionna_model
+
 
 # Ignore virtual environments (if you use one)
 attendance-env/
