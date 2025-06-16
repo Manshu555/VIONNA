@@ -3,6 +3,8 @@ data/sender_credentials.csv
 
 # Ignore the entire data directory (contains sensitive and heavy files)
 data/
+dataset/
+
 
 # Ignore generated files
 data/attendance.csv
@@ -11,8 +13,7 @@ data/attendance_summary.txt
 data/attendance_report.csv
 
 # Ignore large model files (if not using Git LFS)
-models/yolov8n.pt
-models/deepfake-detection-model.h5
+models/
 
 # Ignore Python cache files
 __pycache__/
