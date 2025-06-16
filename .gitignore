@@ -1,0 +1,22 @@
+# Ignore sensitive data files
+data/sender_credentials.csv
+
+# Ignore the entire data directory (contains sensitive and heavy files)
+data/
+
+# Ignore generated files
+data/attendance.csv
+data/weekly_attendance.csv
+data/attendance_summary.txt
+data/attendance_report.csv
+
+# Ignore large model files (if not using Git LFS)
+# models/yolov8n.pt
+# models/deepfake-detection-model.h5
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environments (if you use one)
+attendance-env/
