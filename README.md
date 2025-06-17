@@ -156,7 +156,7 @@ Fork the repository, make improvements, and submit a pull request!
 
 ## License
 
-This project, **NextGen Attendance System**.  
+This project, **Vionna [Vision-Integrated Observation Network for Neural-based Attendance]**.  
 © 2025 Manshu Jaiswal. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files...
