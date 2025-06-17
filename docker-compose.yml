@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  deepfake-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.deepfake
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./models:/app/models
+    networks:
+      - attendance-network
+
+  attendance:
+    build:
+      context: .
+      dockerfile: Dockerfile.attendance
+    devices:
+      - /dev/video0:/dev/video0  # Map camera device (adjust if needed)
+    environment:
+      - DISPLAY=${DISPLAY}  # For OpenCV GUI on macOS/Linux
+    volumes:
+      - ./data:/app/data
+      - ./utils:/app/utils
+      - ./models:/app/models
+    depends_on:
+      - deepfake-server
+    networks:
+      - attendance-network
+    command: python main.py
+
+  weekly-report:
+    build:
+      context: .
+      dockerfile: Dockerfile.attendance
+    volumes:
+      - ./data:/app/data
+    networks:
+      - attendance-network
+    command: python weekly_report.py
+
+networks:
+  attendance-network:
+    driver: bridge

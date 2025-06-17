@@ -8,7 +8,7 @@ import cv2
 
 def encode_faces(dataset_path='dataset/'):
     app = FaceAnalysis(name='buffalo_l')
-    app.prepare(ctx_id=0)  # use -1 for CPU fallback if needed
+    app.prepare(ctx_id=-1)  # use -1 for CPU fallback if needed
 
     known_encodings = []
     known_names = []

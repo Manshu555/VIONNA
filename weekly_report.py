@@ -4,6 +4,11 @@ from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Load student emails from students.csv
 STUDENT_EMAILS = {}
@@ -11,9 +16,9 @@ try:
     with open('data/students.csv', 'r') as email_file:
         csv_reader = csv.DictReader(email_file)
         if not csv_reader.fieldnames:
-            print("Error: data/students.csv is empty or has no header row.")
-            exit()
-        print(f"Columns found in students.csv: {csv_reader.fieldnames}")
+            logger.error("data/students.csv is empty or has no header row")
+            exit(1)
+        logger.info(f"Columns found in students.csv: {csv_reader.fieldnames}")
         
         email_column = None
         for field in csv_reader.fieldnames:
@@ -27,17 +32,17 @@ try:
                 break
 
         if not name_column:
-            print("Error: 'Name' column not found in data/students.csv.")
-            exit()
+            logger.error("'Name' column not found in data/students.csv")
+            exit(1)
         if not email_column:
-            print("Error: 'Email' column not found in data/students.csv.")
-            exit()
+            logger.error("'Email' column not found in data/students.csv")
+            exit(1)
 
         for row in csv_reader:
             STUDENT_EMAILS[row[name_column]] = row[email_column]
 except FileNotFoundError:
-    print("Error: data/students.csv file not found. Please create it with 'Name' and 'Email' columns.")
-    exit()
+    logger.error("data/students.csv file not found")
+    exit(1)
 
 # Load sender credentials from sender_credentials.csv
 try:
@@ -47,11 +52,11 @@ try:
         SENDER_EMAIL = sender_data['Email']
         SENDER_APP_PASSWORD = sender_data['AppPassword']
 except FileNotFoundError:
-    print("Error: data/sender_credentials.csv file not found. Please create it with 'Email' and 'AppPassword' columns.")
-    exit()
+    logger.error("data/sender_credentials.csv file not found")
+    exit(1)
 except KeyError as e:
-    print(f"Error: Missing column {e} in data/sender_credentials.csv. Expected 'Email' and 'AppPassword'.")
-    exit()
+    logger.error(f"Missing column {e} in data/sender_credentials.csv")
+    exit(1)
 
 # Load teacher details from teachers.csv to get max_classes
 TEACHER_DETAILS = {}
@@ -59,9 +64,9 @@ try:
     with open('data/teachers.csv', 'r') as teacher_file:
         csv_reader = csv.DictReader(teacher_file)
         if not csv_reader.fieldnames:
-            print("Error: data/teachers.csv is empty or has no header row.")
-            exit()
-        print(f"Columns found in teachers.csv: {csv_reader.fieldnames}")
+            logger.error("data/teachers.csv is empty or has no header row")
+            exit(1)
+        logger.info(f"Columns found in teachers.csv: {csv_reader.fieldnames}")
         
         max_classes_column = None
         for field in csv_reader.fieldnames:
@@ -70,25 +75,23 @@ try:
                 break
 
         if not max_classes_column:
-            print("Error: 'Max Classes' column not found in data/teachers.csv.")
-            exit()
+            logger.error("'Max Classes' column not found in data/teachers.csv")
+            exit(1)
 
         teacher_data = next(csv_reader)
         TEACHER_DETAILS = {
             'max_classes': int(teacher_data[max_classes_column])
         }
 except FileNotFoundError:
-    print("Error: data/teachers.csv file not found. Please create it with 'Name', 'Department', 'Email', 'Class Timing', and 'Max Classes' columns.")
-    exit()
+    logger.error("data/teachers.csv file not found")
+    exit(1)
 except KeyError as e:
-    print(f"Error: Missing column {e} in data/teachers.csv.")
-    exit()
+    logger.error(f"Missing column {e} in data/teachers.csv")
+    exit(1)
 
-# File for weekly attendance
 weekly_attendance_file = 'data/weekly_attendance.csv'
 
 def send_weekly_attendance_report(students_emails, max_classes):
-    # Load known names (students) from weekly_attendance.csv
     known_names = set()
     try:
         with open(weekly_attendance_file, 'r') as f:
@@ -96,10 +99,9 @@ def send_weekly_attendance_report(students_emails, max_classes):
             for row in csv_reader:
                 known_names.add(row['Name'])
     except FileNotFoundError:
-        print("Error: weekly_attendance.csv not found. No weekly report generated.")
+        logger.error("weekly_attendance.csv not found. No weekly report generated")
         return
 
-    # Calculate attendance
     attendance_records = {}
     for student in known_names:
         attendance_records[student] = {'present': 0, 'total_sessions': 0}
@@ -115,10 +117,9 @@ def send_weekly_attendance_report(students_emails, max_classes):
                     if status == 'Present':
                         attendance_records[name]['present'] += 1
     except FileNotFoundError:
-        print("Error: weekly_attendance.csv not found. No weekly report generated.")
+        logger.error("weekly_attendance.csv not found. No weekly report generated")
         return
 
-    # Send report to each student
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
@@ -159,31 +160,34 @@ def send_weekly_attendance_report(students_emails, max_classes):
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
             server.sendmail(SENDER_EMAIL, email, msg.as_string())
-            print(f"[+] Sent weekly attendance report to {student} at {email}")
+            logger.info(f"Sent weekly attendance report to {student} at {email}")
 
         server.quit()
     except Exception as e:
-        print(f"Error sending weekly attendance reports: {e}")
+        logger.error(f"Error sending weekly attendance reports: {e}")
+        return
 
-    # Reset weekly attendance file
     with open(weekly_attendance_file, 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(['Date', 'Name', 'Status'])
-    print("[+] Reset weekly_attendance.csv for the next week.")
+    logger.info("Reset weekly_attendance.csv for the next week")
 
-# Main loop to check for Sunday at 10:40 PM
+# Main loop with improved timing logic
+last_report_time = None
 while True:
     current_time = datetime.now()
     current_day = current_time.strftime('%A')
     current_hour = current_time.hour
     current_minute = current_time.minute
 
-    # Check if it's Sunday at 22:40 (10:40 PM IST)
-    if current_day == 'Sunday' and current_hour == 22 and current_minute == 40:
-        print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] It's Sunday 10:40 PM. Sending weekly attendance report.")
-        send_weekly_attendance_report(STUDENT_EMAILS, TEACHER_DETAILS['max_classes'])
+    # Check if it's Sunday between 22:40 and 22:41
+    if (current_day == 'Sunday' and current_hour == 22 and 40 <= current_minute <= 41):
+        # Ensure the report is sent only once per week
+        if last_report_time is None or (current_time - last_report_time).days >= 7:
+            logger.info(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Sending weekly attendance report")
+            send_weekly_attendance_report(STUDENT_EMAILS, TEACHER_DETAILS['max_classes'])
+            last_report_time = current_time
     else:
-        print(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Waiting for Sunday 10:40 PM to send weekly report...")
+        logger.debug(f"[{current_time.strftime('%Y-%m-%d %H:%M:%S')}] Waiting for Sunday 10:40 PM to send weekly report")
 
-    # Sleep for 1 minute to avoid high CPU usage
-    time.sleep(60)
+    time.sleep(30)  # Check every 30 seconds

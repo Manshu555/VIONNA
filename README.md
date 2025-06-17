@@ -61,12 +61,27 @@ AUTOATTENDANCEYOLO/
    cd AutoAttendanceYOLO
    ```
 
-2. **Install Dependencies** (recommended: use a virtual environment):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+2. **Install Dependencies** (using two virtual environments):
+
+This project uses two Python versions to avoid dependency conflicts:
+- **Python 3.11** for attendance and reporting scripts (`main.py`, `weekly_report.py`)
+- **Python 3.12** for the deepfake detection server (`deepfake_server.py`)
+
+#### a. Set Up Attendance Environment (Python 3.11)
+```bash
+python3.11 -m venv attendance-env
+source attendance-env/bin/activate
+pip install insightface==0.7.3 onnxruntime numpy requests opencv-python ultralytics
+deactivate
+```
+
+#### b. Set Up Deepfake Environment (Python 3.12)
+```bash
+python3.12 -m venv deepfake-env
+source deepfake-env/bin/activate
+pip install tensorflow flask numpy opencv-python
+deactivate
+```
 
 3. **Download Model Files**:
    - Download `yolov8n.pt` from the [Ultralytics YOLOv8 releases](https://github.com/ultralytics/ultralytics/releases) and place it in `models/`.
@@ -95,23 +110,42 @@ AUTOATTENDANCEYOLO/
 
 ## Usage
 
-- **Start Deepfake Server**:
-  ```bash
-  python deepfake_server.py
-  ```
+### 1. Start the Deepfake Server (`deepfake-env`)
 
-- **Run Weekly Report Script** (sends reports every Sunday at 22:40 IST):
-  ```bash
-  python weekly_report.py
-  ```
+Open a terminal and run:
+```bash
+cd /path/to/VIONNA
+source deepfake-env/bin/activate
+python deepfake_server.py
+```
+**Expected output:**
+```
+* Running on http://0.0.0.0:5001/
+```
 
-- **Run Main Attendance Script**:
-  ```bash
-  python main.py
-  ```
-  - The script waits for the class start time from `teachers.csv`.
-  - Students should be in front of the webcam.
-  - Press `x` to end early or wait for the session to finish.
+### 2. Run Main Attendance Script (`attendance-env`)
+
+Open a second terminal and run:
+```bash
+cd /path/to/VIONNA
+source attendance-env/bin/activate
+python main.py
+```
+- Ensure the `Class Timing` in `teachers.csv` is set to a future time (e.g., `08:30:00` if it’s before 08:30 AM IST).
+- The script will wait until the class starts, then begin capturing video and marking attendance.
+- Students should be in front of the webcam.
+- Press `x` to end early or wait for the session to finish.
+
+### 3. Run Weekly Report Script (`attendance-env`)
+
+Open a third terminal and run:
+```bash
+cd /path/to/VIONNA
+source attendance-env/bin/activate
+python weekly_report.py
+```
+- This script sends weekly attendance reports every Sunday at 22:40 IST.
+
 
 ## Outputs
 
@@ -160,7 +194,7 @@ Fork the repository, make improvements, and submit a pull request!
 
 ## License
 
-This project, **NextGen Attendance System**.  
+This project, **Vionna**.  
 © 2025 Manshu Jaiswal. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files...

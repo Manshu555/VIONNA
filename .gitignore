@@ -1,26 +1,43 @@
-# Ignore sensitive data files
-data/sender_credentials.csv
+# macOS system files
+.DS_Store
 
-# Ignore the entire data directory (contains sensitive and heavy files)
+# Ignore sensitive data directories
 data/
 dataset/
+encodings/
 
-
-# Ignore generated files
+# Ignore generated files in data/
 data/attendance.csv
 data/weekly_attendance.csv
 data/attendance_summary.txt
 data/attendance_report.csv
 
-# Ignore large model files (if not using Git LFS)
+# Ignore large model files
 models/
 
 # Ignore Python cache files
 __pycache__/
 *.pyc
-#Vionna_model
+
+# Ignore specific project directories
 vionna_model/
+basedata/
 
-
-# Ignore virtual environments (if you use one)
+# Ignore virtual environments
 attendance-env/
+deepfake-env/
+
+# Allow specific directories
+!templates/
+!utils/
+
+# Ignore temporary files
+*.log
+*.tmp
+.ipynb_checkpoints/
+
+# Ignore media files
+*.jpeg
+*.jpg
+*.png
+*.mp4

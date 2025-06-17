@@ -1,0 +1,22 @@
+# Use Python 3.12 base image
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements file
+COPY requirements.deepfake.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.deepfake.txt
+
+# Install OpenCV dependencies (for cv2)
+RUN apt-get update && apt-get install -y \
+    libopencv-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the project files
+COPY . .
+
+# Command will be specified in docker-compose.yml
+CMD ["python", "deepfake_server.py"]
