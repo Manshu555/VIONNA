@@ -1,8 +1,8 @@
-## 📄 Project Report
-
-You can view the detailed project report [here](https://drive.google.com/file/d/19PVz3WybwRQCgBqx9pj5R7sDXokf2KOj/view?usp=drive_link).
+## VIONNA
 
 > **Vision-Integrated Observation Network for Neural-based Attendance**
+
+You can view the detailed project report [here](https://drive.google.com/file/d/19PVz3WybwRQCgBqx9pj5R7sDXokf2KOj/view?usp=drive_link).
 
 ---
 
